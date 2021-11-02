@@ -15,12 +15,13 @@ app.post("/todos", async (req, res) => {
 	try {
 		// console.log(req.body)
 		const { description } = req.body
+		console.log(description)
 		const newTodo = await pool.query(
-			"INSERT INTO todo (description) VALUES($1) RETURNING *",
+			`INSERT INTO todo (description) VALUES($1) RETURNING *`,
 			[description]
 		)
 
-        res.json(newTodo.rows[0])
+		res.json(newTodo.rows[0])
 	} catch (error) {
 		console.log(error.message)
 	}
@@ -29,29 +30,57 @@ app.post("/todos", async (req, res) => {
 //Get all
 
 app.get("/todos", async (req, res) => {
-    try {
-        const allTodos = await pool.query("SELECT * FROM todo")
-        res.json(allTodos.rows)
-    } catch (error) {
-        console.log(error.message);
-    }
+	try {
+		const allTodos = await pool.query("SELECT * FROM todo")
+		res.json(allTodos.rows)
+	} catch (error) {
+		console.log(error.message)
+	}
 })
 
 //Get one
 
 app.get("/todos/:id", async (req, res) => {
-    try {
-        const {id} = req.params
-        const selectedTodos = await pool.query(`SELECT * FROM todo WHERE todo_id = ${id}`)
-        res.json(selectedTodos.rows)
-    } catch (error) {
+	try {
+		const { id } = req.params
+		const selectedTodos = await pool.query(
+			`SELECT * FROM todo WHERE todo_id = $1`,
+			[id]
+		)
+		res.json(selectedTodos.rows)
+	} catch (error) {
+		console.log(error.message)
+	}
+})
+
+//update
+app.patch("/todos/:id", async (req, res) => {
+	try {
+		const { id } = req.params
+		const { description } = req.body
+		const updateTodo = await pool.query(
+			"UPDATE todo SET description = $1 WHERE todo_id = $2",
+			[description, id]
+		)
+        res.json("Updated Todo")
+	} catch (error) {
         console.log(error.message);
     }
 })
 
-//update
-
 //delete
+app.delete("/todos/:id", async (req, res) => {
+	try {
+		const { id } = req.params
+		const deleteTodo = await pool.query(
+			`DELETE FROM todo WHERE todo_id = $1`,
+			[id]
+		)
+		res.json('task deleted')
+	} catch (error) {
+		console.log(error.message)
+	}
+})
 
 app.listen(8000, () => {
 	console.log("Server running on port 8000")
